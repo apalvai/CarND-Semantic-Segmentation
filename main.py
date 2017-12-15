@@ -65,11 +65,14 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     layer4_output = tf.add(layer4_decode, layer4_encode_conv_1x1)
 
     # Layer 3
-    layer3_decode = tf.layers.conv2d_transpose(layer4_output, num_classes, 16, strides=(8, 8), padding="same",
+    layer3_decode = tf.layers.conv2d_transpose(layer4_output, num_classes, 4, strides=(2, 2), padding="same",
                                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     layer3_encode_conv_1x1 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, padding="same",
                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     output = tf.add(layer3_decode, layer3_encode_conv_1x1)
+
+    output = tf.layers.conv2d_transpose(output, num_classes, 16, strides=(8, 8), padding="same",
+                                               kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     return output
 tests.test_layers(layers)
@@ -128,8 +131,8 @@ tests.test_train_nn(train_nn)
 def run():
     num_classes = 2
     image_shape = (160, 576)
-    data_dir = './data'
-    runs_dir = './runs'
+    data_dir = '/data'
+    runs_dir = '/output'
     tests.test_for_kitti_dataset(data_dir)
 
     # Download pretrained vgg model
@@ -148,8 +151,8 @@ def run():
         # OPTIONAL: Augment Images for better results
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
-        epochs = 100
-        batch_size = 1
+        epochs = 50
+        batch_size = 5
 
         correct_label = tf.placeholder(tf.int32, [None, None, None, num_classes], name='correct_label')
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
